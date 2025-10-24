@@ -7,6 +7,9 @@ services:
     image: devops-todo:latest
     container_name: todo_api
     restart: always
+    environment:
+      NEW_RELIC_APP_NAME: ${NEW_RELIC_APP_NAME}
+      NEW_RELIC_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY}
     env_file:
       - .env
     expose:

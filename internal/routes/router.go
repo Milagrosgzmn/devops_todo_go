@@ -4,10 +4,17 @@ import (
 	"github.com/Milagrosgzmn/devops_todo_go.git/internal/handlers"
 	"github.com/Milagrosgzmn/devops_todo_go.git/internal/repository"
 	"github.com/gin-gonic/gin"
+	"github.com/newrelic/go-agent/v3/integrations/nrgin"
+	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
-func SetupRouter(repo repository.IRepository) *gin.Engine {
+func SetupRouter(repo repository.IRepository, nrApp *newrelic.Application) *gin.Engine {
 	router := gin.Default()
+
+	// si esta configurado New Relic, usamos el middleware
+	if nrApp != nil {
+		router.Use(nrgin.Middleware(nrApp))
+	}
 
 	itemHandler := handlers.NewItemHandler(repo)
 

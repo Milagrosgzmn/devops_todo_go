@@ -9,6 +9,7 @@ import (
 	"github.com/Milagrosgzmn/devops_todo_go.git/internal/repository"
 	"github.com/Milagrosgzmn/devops_todo_go.git/internal/routes"
 	"github.com/joho/godotenv"
+	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
 //go:embed internal/migrations/*.sql
@@ -34,7 +35,19 @@ func main() {
 	// Inicializamos el repositorio
 	var repo repository.IRepository = repository.NewItemMySqlRepository(dbInstance)
 
-	// Configuramos el router
-	router := routes.SetupRouter(repo);
+	// Inicializamos New Relic
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName(cfg.GetEnv("NEW_RELIC_APP_NAME", "devops_todo_app_go")),
+		newrelic.ConfigLicense(cfg.GetEnv("NEW_RELIC_LICENSE_KEY", "")),
+		newrelic.ConfigDistributedTracerEnabled(true),
+	)
+	if err != nil {
+		log.Printf("WARN: Fallo la inicialización de New Relic: %v. Continuando sin monitoreo.\n", err)
+	} else {
+		log.Println("INFO: New Relic inicializo correctamente.")
+	}
+
+	// Configuramos el router con New Relic
+	router := routes.SetupRouter(repo, app);
 	router.Run(":8080")
 }
